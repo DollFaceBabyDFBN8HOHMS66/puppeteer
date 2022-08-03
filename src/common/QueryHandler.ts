@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ariaHandler} from './AriaQueryHandler.js';
+import {ariaHandler as ariaQueryHandler} from './AriaQueryHandler.js';
 import {DOMWorld, WaitForSelectorOptions} from './DOMWorld.js';
 import {ElementHandle} from './ElementHandle.js';
 import {JSHandle} from './JSHandle.js';
@@ -160,7 +160,7 @@ const defaultHandler = internalizeCustomQueryHandler({
   },
 });
 
-const pierceHandler = internalizeCustomQueryHandler({
+const pierceQueryHandler = internalizeCustomQueryHandler({
   queryOne: (element, selector) => {
     let found: Node | null = null;
     const search = (root: Node) => {
@@ -210,7 +210,7 @@ const pierceHandler = internalizeCustomQueryHandler({
   },
 });
 
-const xpathHandler = internalizeCustomQueryHandler({
+const xpathQueryHandler = internalizeCustomQueryHandler({
   queryOne: (element, selector) => {
     const doc = element.ownerDocument || document;
     const result = doc.evaluate(
@@ -244,10 +244,18 @@ interface RegisteredQueryHandler {
   transformSelector?: (selector: string) => string;
 }
 
+const transformTextSelector = (selector: string): string => {
+  return `.//*[text()[contains(.,${JSON.stringify(selector)})]]`;
+};
+
 const INTERNAL_QUERY_HANDLERS = new Map<string, RegisteredQueryHandler>([
-  ['aria', {handler: ariaHandler}],
-  ['pierce', {handler: pierceHandler}],
-  ['xpath', {handler: xpathHandler}],
+  ['aria', {handler: ariaQueryHandler}],
+  ['pierce', {handler: pierceQueryHandler}],
+  ['xpath', {handler: xpathQueryHandler}],
+  [
+    'text',
+    {handler: xpathQueryHandler, transformSelector: transformTextSelector},
+  ],
 ]);
 const QUERY_HANDLERS = new Map<string, RegisteredQueryHandler>();
 
